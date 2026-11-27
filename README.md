@@ -54,12 +54,12 @@ Browser-only controls provide Start/Stop, waveform (sawtooth, square, triangle, 
 - Each step offers REST or one of the 12 chromatic pitch classes. All steps share the selected octave.
 - One step is an eighth note: duration in seconds is `60 / BPM / 2`.
 - Start begins from step 1. Stop closes the audio context; the next Start creates a new one.
-- While stopped, turning the physical encoder selects a step. Pressing it toggles note-edit mode; turning it then changes the note. Selection and notes wrap at either end.
+- While stopped or playing, turning the physical encoder selects a step. Pressing it toggles note-edit mode; turning it then changes the note. Selection and notes wrap at either end.
 - Browser −/+ buttons follow the same mode: they select steps outside edit mode and change notes inside edit mode.
 - Focusing a note dropdown selects its step and exits edit mode. Changing a dropdown updates the sequence.
 - Green indicates playback, gold outlines selection, and orange indicates editing.
 
-**Current difference between browser and firmware:** the browser permits editing during playback. The sketch suppresses encoder rotation/button messages while playing and forces its local editing flag off. Browser editing can therefore continue while the physical encoder is inactive and the LCD does not blink.
+The browser and physical encoder both allow editing during playback. Upload the updated sketch to enable this on the hardware. Notes already scheduled by the browser may play their previous value before the edit is heard.
 
 ## Sound engine
 
@@ -80,8 +80,8 @@ Connection speed is **115200 baud**. Messages are text lines terminated by a new
 | Direction | Format | Meaning |
 | --- | --- | --- |
 | Arduino → browser | `pitch,cutoff,thirdKnob,lfo` | Four knob readings, e.g. `0,50,40,0` maps to 120 BPM |
-| Arduino → browser | `E,<delta>` | Signed encoder detent count; emitted only while stopped |
-| Arduino → browser | `B` | Debounced button press; emitted only while stopped |
+| Arduino → browser | `E,<delta>` | Signed encoder detent count; emitted while stopped or playing |
+| Arduino → browser | `B` | Debounced button press; emitted while stopped or playing |
 | Browser → Arduino | `N,<16 characters>` | Eight fixed-width two-character note cells |
 | Browser → Arduino | `S,<playing>,<selected>,<editing>` | Playback/edit flags as 0/1 and selected index |
 | Browser → Arduino | `P,<index>` | Current playback step |
@@ -95,11 +95,11 @@ The browser serializes writes through a promise queue. Its `sync()` sends notes 
 Physical LCD rows:
 
 1. Eight two-character sequence cells.
-2. Blank.
+2. A `^` marker under the current playback step while playing; blank while stopped.
 3. PIT and CUT values.
 4. BPM and LFO values.
 
-The cursor follows the selected step while stopped and the playhead while playing. It blinks during stopped note editing. The browser's virtual LCD is similar but replaces the sequence row with `EDIT STEP …` while editing; it is not an exact physical-display emulator.
+The cursor always follows the selected step and blinks during note editing, including during playback. The separate marker on row 2 follows playback. The browser's virtual LCD is similar but replaces the sequence row with `EDIT STEP …` while editing; it is not an exact physical-display emulator.
 
 ## Initial run procedure
 
@@ -119,10 +119,9 @@ The page can also run without an Arduino: click Start to use its initial paramet
 
 - No persistence: refreshing the page resets notes and browser settings.
 - No confirmed hardware/build test or browser compatibility test is recorded.
-- Playback editing policy differs across browser and firmware; decide whether physical editing should also work while playing.
 - Serial write failures are silently caught. Connection status does not guarantee that the LCD received an update.
 - The firmware uses a 64-byte input buffer and basic parsing; oversized lines are truncated rather than explicitly rejected as a whole.
-- Browser state is authoritative, but there is no acknowledgement that the Arduino applied it. Disconnecting during playback can leave the Arduino with stale `playing` state, suppressing its encoder messages until state is resynchronized or the board resets.
+- Browser state is authoritative, but there is no acknowledgement that the Arduino applied it. Disconnecting during playback can leave the Arduino showing a stale playback marker until state is resynchronized or the board resets.
 - The physical display shows pitch as −100…+100 and cutoff/LFO as percentages, rather than semitones or Hz.
 
-Suggested first checks: compile/upload with recorded board and library versions; verify all four knob mappings and LCD rows; test stopped selection/editing and wraparound; test REST, octave, waveform, and Start/Stop; compare browser editing during playback with physical encoder behavior; then test disconnect/reconnect both while stopped and while playing.
+Suggested first checks: compile/upload with recorded board and library versions; verify all four knob mappings and LCD rows; test stopped selection/editing and wraparound; test REST, octave, waveform, and Start/Stop; verify encoder selection, note editing, and the separate LCD playback marker during playback; then test disconnect/reconnect both while stopped and while playing.

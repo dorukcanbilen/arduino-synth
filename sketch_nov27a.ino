@@ -79,7 +79,7 @@ void receiveLine() {
 
       playing = p;
       selected = constrain(s, 0, 7);
-      editing = e && !playing;
+      editing = e;
     }
   }
 
@@ -156,8 +156,8 @@ void loop() {
 
   interrupts();
 
-  // Only allow editing while stopped
-  if (detents && !playing) {
+  // Keep selection and note editing available during playback
+  if (detents) {
     Serial.print("E,");
     Serial.println(detents);
   }
@@ -176,7 +176,7 @@ void loop() {
 
     stableButton = b;
 
-    if (b == LOW && !playing) {
+    if (b == LOW) {
       Serial.println("B");
     }
   }
@@ -245,9 +245,13 @@ void loop() {
   lcd.print(notes);
   lcd.print("    ");
 
-  // ROW 2: Empty
+  // ROW 2: Playback marker, separate from the selected note
   lcd.setCursor(0, 1);
   lcd.print("                    ");
+  if (playing) {
+    lcd.setCursor(2 * playhead, 1);
+    lcd.print("^");
+  }
 
   // ROW 3: Pitch and cutoff
   snprintf(
@@ -275,7 +279,7 @@ void loop() {
   // SEQUENCER CURSOR
 
   lcd.setCursor(
-    2 * (playing ? playhead : selected),
+    2 * selected,
     0);
 
   lcd.cursor();
