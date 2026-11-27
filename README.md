@@ -14,7 +14,7 @@ An eight-step monophonic synthesizer runs in the browser, controlled by an Ardui
 
 | File | Purpose |
 | --- | --- |
-| `StepEditorV3.html` | Self-contained interface, Web Serial connection, eight-step editor, and Web Audio synthesizer. CSS and JavaScript are embedded; there are no external package imports. |
+| `index.html` | Self-contained interface, Web Serial connection, eight-step editor, and Web Audio synthesizer. CSS and JavaScript are embedded; there are no external package imports. |
 | `sketch_nov27a.ino` | Arduino firmware for analog inputs, encoder decoding, serial messages, and the physical LCD. Uses `Wire.h` and `LiquidCrystal_I2C.h`. |
 | `README.md` | This initial source-based project documentation. |
 
@@ -109,7 +109,7 @@ These steps are inferred from the source and have not yet been verified on hardw
 2. Open the sketch in the Arduino IDE. If it requests a matching sketch folder, place `sketch_nov27a.ino` in a folder named `sketch_nov27a`.
 3. Install a compatible `LiquidCrystal_I2C` library supporting `init()`, select the board and serial port, and upload. The repository does not pin a library implementation or version.
 4. Close any Serial Monitor or other application holding the port.
-5. Open `StepEditorV3.html` in a browser exposing `navigator.serial`. The page recommends desktop Chrome or Edge and opening the file directly; actual browser support and permissions still need verification.
+5. Open `index.html` in a browser exposing `navigator.serial`. The page recommends desktop Chrome or Edge and opening the file directly; actual browser support and permissions still need verification.
 6. Click **Connect Arduino** and choose its port. Check that knob values update and the physical LCD receives the sequence.
 7. Start with low computer volume, then click **Start Sequencer**. Sound comes from the computer's selected audio output.
 
